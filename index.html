@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Unity WebGL Player | NEO Textile URP</title>
+</head>
+<body style="text-align: center; padding: 0; border: 0; margin: 0;">
+    <canvas id="unity-canvas" width="1920" height="1080" tabindex="-1" style="width: 1920px; height: 1080px; background: #231F20"></canvas>
+    
+    <script src="Build/Neo Clothing Simulation.loader.js"></script>
+
+    <script>
+        var unityInstance = null; // Store Unity instance globally
+
+        // Function to trigger image upload from Unity
+        function CallUploadFromUnity() {
+            var input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = function (event) {
+                var file = event.target.files[0];
+                if (file) {
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        var dataUrl = e.target.result;
+                        SendImageToUnity(dataUrl);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+            input.click();
+        }
+
+        // Function to send the selected image back to Unity
+        function SendImageToUnity(dataUrl) {
+            if (unityInstance) {
+                unityInstance.SendMessage('ImageLoader', 'OnImageLoaded', dataUrl);
+            } else {
+                console.error("Unity instance is not initialized yet.");
+            }
+        }
+
+        // Handle mobile device adjustments
+        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+            var meta = document.createElement('meta');
+            meta.name = 'viewport';
+            meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+            document.getElementsByTagName('head')[0].appendChild(meta);
+
+            var canvas = document.querySelector("#unity-canvas");
+            canvas.style.width = "100%";
+            canvas.style.height = "100%";
+            canvas.style.position = "fixed";
+
+            document.body.style.textAlign = "left";
+        }
+
+        // Initialize Unity WebGL instance
+        createUnityInstance(document.querySelector("#unity-canvas"), {
+            dataUrl: "Build/Neo Clothing Simulation.data",
+            frameworkUrl: "Build/Neo Clothing Simulation.framework.js",
+            codeUrl: "Build/Neo Clothing Simulation.wasm",
+            streamingAssetsUrl: "StreamingAssets",
+            companyName: "DefaultCompany",
+            productName: "NEO Textile URP",
+            productVersion: "0.1.0",
+        }).then((instance) => {
+            unityInstance = instance; // Assign Unity instance globally
+        });
+    </script>
+</body>
+</html>
